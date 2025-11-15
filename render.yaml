@@ -19,7 +19,7 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS
-        value: .onrender.com
+        value: .onrender.com,product-importer-web-7geo.onrender.com
 
   - type: worker
     name: product-importer-worker
