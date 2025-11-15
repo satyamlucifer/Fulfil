@@ -120,15 +120,8 @@ class ProductViewSet(viewsets.ModelViewSet):
         # Generate unique task ID
         task_id = str(uuid.uuid4())
         
-        # Save file temporarily
-        upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
-        os.makedirs(upload_dir, exist_ok=True)
-        
-        file_path = os.path.join(upload_dir, f'{task_id}_{uploaded_file.name}')
-        
-        with open(file_path, 'wb+') as destination:
-            for chunk in uploaded_file.chunks():
-                destination.write(chunk)
+        # Read CSV content
+        csv_content = uploaded_file.read().decode('utf-8-sig')
 
         # Create import job
         import_job = ImportJob.objects.create(
@@ -137,9 +130,9 @@ class ProductViewSet(viewsets.ModelViewSet):
             status='pending'
         )
 
-        # Start Celery task
+        # Start Celery task with CSV content
         process_csv_import.apply_async(
-            args=[file_path, uploaded_file.name, task_id],
+            args=[csv_content, uploaded_file.name, task_id],
             task_id=task_id
         )
 

@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task(bind=True)
-def process_csv_import(self, file_path, filename, task_id):
+def process_csv_import(self, csv_content, filename, task_id):
     """
-    Process CSV file and import products.
+    Process CSV content and import products.
     Updates progress via WebSocket.
     """
     channel_layer = get_channel_layer()
@@ -48,9 +48,9 @@ def process_csv_import(self, file_path, filename, task_id):
         })
 
         # First pass: count total rows
-        with open(file_path, 'r', encoding='utf-8-sig') as csvfile:
-            reader = csv.DictReader(csvfile)
-            total_rows = sum(1 for row in reader)
+        lines = csv_content.strip().split('\n')
+        reader = csv.DictReader(lines)
+        total_rows = sum(1 for row in reader)
         
         import_job.total_rows = total_rows
         import_job.save()
@@ -80,11 +80,11 @@ def process_csv_import(self, file_path, filename, task_id):
         updated_count = 0
         error_count = 0
 
-        with open(file_path, 'r', encoding='utf-8-sig') as csvfile:
-            reader = csv.DictReader(csvfile)
-            batch = []
+        lines = csv_content.strip().split('\n')
+        reader = csv.DictReader(lines)
+        batch = []
 
-            for row in reader:
+        for row in reader:
                 try:
                     # Normalize column names (strip whitespace, lowercase)
                     row = {k.strip().lower(): v.strip() if v else '' for k, v in row.items()}
