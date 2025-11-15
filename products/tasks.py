@@ -85,71 +85,71 @@ def process_csv_import(self, csv_content, filename, task_id):
         batch = []
 
         for row in reader:
-                try:
-                    # Normalize column names (strip whitespace, lowercase)
-                    row = {k.strip().lower(): v.strip() if v else '' for k, v in row.items()}
-                    
-                    # Extract fields (assuming CSV has: sku, name, description)
-                    sku = row.get('sku', '').upper()
-                    name = row.get('name', '')
-                    description = row.get('description', '')
+            try:
+                # Normalize column names (strip whitespace, lowercase)
+                row = {k.strip().lower(): v.strip() if v else '' for k, v in row.items()}
+                
+                # Extract fields (assuming CSV has: sku, name, description)
+                sku = row.get('sku', '').upper()
+                name = row.get('name', '')
+                description = row.get('description', '')
 
-                    if not sku or not name:
-                        error_count += 1
-                        continue
-
-                    batch.append({
-                        'sku': sku,
-                        'name': name,
-                        'description': description,
-                    })
-
-                    if len(batch) >= batch_size:
-                        created, updated, errors = process_batch(batch)
-                        created_count += created
-                        updated_count += updated
-                        error_count += errors
-                        processed_rows += len(batch)
-                        batch = []
-
-                        # Update progress
-                        progress = round((processed_rows / total_rows) * 100, 2)
-                        
-                        import_job.processed_rows = processed_rows
-                        import_job.created_count = created_count
-                        import_job.updated_count = updated_count
-                        import_job.error_count = error_count
-                        import_job.save()
-
-                        # Send progress update via WebSocket
-                        async_to_sync(channel_layer.group_send)(
-                            f'import_{task_id}',
-                            {
-                                'type': 'import_progress',
-                                'data': {
-                                    'task_id': task_id,
-                                    'status': 'processing',
-                                    'total_rows': total_rows,
-                                    'processed_rows': processed_rows,
-                                    'progress': progress,
-                                    'created_count': created_count,
-                                    'updated_count': updated_count,
-                                    'error_count': error_count,
-                                }
-                            }
-                        )
-
-                except Exception as e:
-                    logger.error(f"Error processing row: {e}")
+                if not sku or not name:
                     error_count += 1
+                    continue
 
-            # Process remaining batch
-            if batch:
-                created, updated, errors = process_batch(batch)
-                created_count += created
-                updated_count += updated
-                error_count += errors
-                processed_rows += len(batch)
+                batch.append({
+                    'sku': sku,
+                    'name': name,
+                    'description': description,
+                })
+
+                if len(batch) >= batch_size:
+                    created, updated, errors = process_batch(batch)
+                    created_count += created
+                    updated_count += updated
+                    error_count += errors
+                    processed_rows += len(batch)
+                    batch = []
+
+                    # Update progress
+                    progress = round((processed_rows / total_rows) * 100, 2)
+                    
+                    import_job.processed_rows = processed_rows
+                    import_job.created_count = created_count
+                    import_job.updated_count = updated_count
+                    import_job.error_count = error_count
+                    import_job.save()
+
+                    # Send progress update via WebSocket
+                    async_to_sync(channel_layer.group_send)(
+                        f'import_{task_id}',
+                        {
+                            'type': 'import_progress',
+                            'data': {
+                                'task_id': task_id,
+                                'status': 'processing',
+                                'total_rows': total_rows,
+                                'processed_rows': processed_rows,
+                                'progress': progress,
+                                'created_count': created_count,
+                                'updated_count': updated_count,
+                                'error_count': error_count,
+                            }
+                        }
+                    )
+
+            except Exception as e:
+                logger.error(f"Error processing row: {e}")
+                error_count += 1
+
+        # Process remaining batch
+        if batch:
+            created, updated, errors = process_batch(batch)
+            created_count += created
+            updated_count += updated
+            error_count += errors
+            processed_rows += len(batch)
 
         # Mark as completed
         import_job.status = 'completed'
