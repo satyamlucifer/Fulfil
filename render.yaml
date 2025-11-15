@@ -15,10 +15,7 @@ services:
           name: product-importer-db
           property: connectionString
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: product-importer-redis
-          property: connectionString
+        value: redis://red-d4c463bipnbcao0:6379
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS
@@ -38,17 +35,9 @@ services:
           name: product-importer-db
           property: connectionString
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: product-importer-redis
-          property: connectionString
+        value: redis://red-d4c463bipnbcao0:6379
       - key: SECRET_KEY
         sync: false
-
-  - type: redis
-    name: product-importer-redis
-    plan: free
-    maxmemoryPolicy: noeviction
 
 databases:
   - name: product-importer-db
