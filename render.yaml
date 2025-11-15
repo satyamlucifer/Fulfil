@@ -49,7 +49,6 @@ services:
     name: product-importer-redis
     plan: free
     maxmemoryPolicy: noeviction
-    ipAllowList: []
 
 databases:
   - name: product-importer-db
