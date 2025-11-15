@@ -58,5 +58,10 @@ class ImportJobSerializer(serializers.ModelSerializer):
             'error_count', 'progress_percentage', 'error_message',
             'created_at', 'started_at', 'completed_at'
         ]
-        read_only_fields = '__all__'
+        read_only_fields = [
+            'id', 'task_id', 'filename', 'status', 'total_rows',
+            'processed_rows', 'created_count', 'updated_count',
+            'error_count', 'progress_percentage', 'error_message',
+            'created_at', 'started_at', 'completed_at'
+        ]
 
