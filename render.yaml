@@ -1,0 +1,56 @@
+services:
+  - type: web
+    name: product-importer-web
+    runtime: python
+    plan: starter
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate"
+    startCommand: "daphne -b 0.0.0.0 -p $PORT config.asgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.6
+      - key: DEBUG
+        value: False
+      - key: DATABASE_URL
+        fromDatabase:
+          name: product-importer-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: product-importer-redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+
+  - type: worker
+    name: product-importer-worker
+    runtime: python
+    plan: starter
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "celery -A config worker --loglevel=info --concurrency=4"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.6
+      - key: DATABASE_URL
+        fromDatabase:
+          name: product-importer-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: product-importer-redis
+          property: connectionString
+      - key: SECRET_KEY
+        sync: false
+
+databases:
+  - name: product-importer-db
+    plan: starter
+    databaseName: product_importer
+    user: product_importer
+
+  - name: product-importer-redis
+    plan: starter
+
