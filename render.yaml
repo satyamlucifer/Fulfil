@@ -47,10 +47,9 @@ services:
 
 databases:
   - name: product-importer-db
-    plan: starter
+    plan: free
     databaseName: product_importer
     user: product_importer
 
   - name: product-importer-redis
-    plan: starter
-
+    plan: free
