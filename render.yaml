@@ -45,11 +45,13 @@ services:
       - key: SECRET_KEY
         sync: false
 
+  - type: redis
+    name: product-importer-redis
+    plan: free
+    maxmemoryPolicy: noeviction
+
 databases:
   - name: product-importer-db
     plan: free
     databaseName: product_importer
     user: product_importer
-
-  - name: product-importer-redis
-    plan: free
