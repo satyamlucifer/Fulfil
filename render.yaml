@@ -35,7 +35,7 @@ services:
           name: product-importer-db
           property: connectionString
       - key: REDIS_URL
-        value: redis://red-d4c463bipnbcao0:6379
+        value: redis://red-d4c463bipnbc73971ao0:6379
       - key: SECRET_KEY
         sync: false
 
